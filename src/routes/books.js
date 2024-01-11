@@ -16,4 +16,8 @@ router.put('/dislike/:book_id', verifyAccessToken, bookController.dislike_book);
 
 router.get('/all', verifyAccessToken, bookController.getBooks);
 
+router.get('/my', verifyAccessToken, bookController.getMyBooks);
+
+router.delete("/:book_id", verifyAccessToken, bookController.deleteBook);
+
 module.exports = router;

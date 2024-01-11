@@ -17,8 +17,9 @@
     "prisma": "^5.8.0"
   },
   "scripts": {
+    "start": "node ./src/dev_setup.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./src/dev_setup.js",
+    "dev": "sudo kill -9 $(sudo lsof -t -i:3000) && nodemon ./src/dev_setup.js",
     "db_refresh": "npx prisma db pull &&  npx prisma generate",
     "refresh": "sh ./scripts/refresh.sh"
   },

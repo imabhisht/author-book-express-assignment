@@ -53,11 +53,46 @@ module.exports.getBooks = async(req,res) => {
     }
 }
 
+module.exports.getMyBooks = async(req,res) => {
+    try {
+        const { id } = req.user;
+        const { skip, take, sort_by } = req.query;
+
+        // Default values
+        const skip_default = skip || 0;
+        const take_default = take || 10;
+
+        // GET BOOKS BY MOST LIKED or LEAST LIKED
+        const books = await prisma.books.findMany({
+            skip: parseInt(skip_default),
+            take: parseInt(take_default),
+            orderBy:{
+                likes: sort_by === "most_liked" ? "desc" : "asc"
+            },
+            where:{
+                author_id: id,
+            }
+        });
+
+        return res.status(200).json({
+            books,
+            message: "Books fetched successfully",
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:error.message});
+    }
+
+}
+
 module.exports.createBookModule = createBookModule;
 
 module.exports.create_book = async (req,res) => {
     try {
-        const {title, author_id } = req.body;
+        const {title } = req.body;
+        const { id } = req.user;
+        const author_id = id;
         const likes = 0;
 
         const book = await createBookModule({
@@ -152,6 +187,35 @@ module.exports.dislike_book = async (req,res) => {
         if(error.code === "P2017"){
             return res.status(200).json({message:"Book already disliked by User"});
         }
+        console.log(error);
+        return res.status(500).json({message:error.message});
+    }
+}
+
+
+module.exports.deleteBook = async(req,res) => {
+    try {
+        const { id } = req.user;
+
+        // Get book_id from req.params
+        const { book_id } = req.params;
+
+        const book = await prisma.books.delete({
+            where:{
+                id:book_id,
+                author:{
+                    id: id,
+                }
+            }
+        });
+
+        return res.status(200).json({
+            ...book,
+            message: "Book deleted successfully",
+        });
+
+
+    } catch (error) {
         console.log(error);
         return res.status(500).json({message:error.message});
     }

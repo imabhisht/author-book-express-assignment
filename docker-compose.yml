@@ -3,12 +3,16 @@ version: '3.9'
 services:
   postgres:
     image: postgres:14-alpine
+    container_name: postgresx
+    hostname: postgresx
     ports:
       - "5433:5432"
     volumes:
       - ~/apps/postgres:/var/lib/postgresql/data
     env_file:
       - .env
+    networks:
+      - app-network
 
   initdb:
     image: postgres:14-alpine
@@ -20,3 +24,29 @@ services:
       - .env
     depends_on:
       - postgres
+    networks:
+      - app-network
+
+  node-app:
+    image: node:20
+    container_name: express-app-1
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npx prisma db pull &&  npx prisma generate && npm start"
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - initdb
+    networks:
+      - app-network
+
+
+
+networks:
+  app-network:
+    driver: bridge

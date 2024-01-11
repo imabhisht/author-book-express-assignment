@@ -40,7 +40,17 @@ module.exports.verifyAccessToken = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.log(error)
+        if (error.message === "jwt expired") {
+            return res.status(401).json({
+                error: "Access token expired. Please call the Refresh Access Token API."
+            });
+        }
+
+        else if(error.message == "invalid signature"){
+            return res.status(401).json({
+                error: "Invalid Access Token or Signature Mismatched. Please login again."
+            });
+        }
         res.status(401).json({
             error: error.message
         });

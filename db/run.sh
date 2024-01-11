@@ -6,5 +6,7 @@ until pg_isready -h postgres -p 5432 -q -U admin; do
   sleep 1
 done
 
+export PGPASSWORD=adminadmin
+
 # Execute the SQL script
 psql -h postgres -U admin -d postgres -f /docker-entrypoint-initdb.d/init.sql

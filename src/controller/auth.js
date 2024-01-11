@@ -197,6 +197,11 @@ module.exports.refresh_access_token = async (req,res) => {
         });
 
     } catch (error) {
+        if(error.message == "invalid signature"){
+            return res.status(401).json({
+                error: "Invalid Access Token or Signature Mismatched. Please login again."
+            });
+        }
         console.log(error);
         return res.status(500).json({message:error.message});
     }

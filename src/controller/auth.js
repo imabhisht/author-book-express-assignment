@@ -3,6 +3,7 @@ const prisma = require("../prisma_init.js");
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
 
 const hashPassword = async(password) => {
     const saltRounds = 10; // Number of salt rounds, a cost factor to make the hashing process slower and more secure
@@ -25,12 +26,9 @@ const verify_password = async (password, password_hash) => {
 };
 
 
-module.exports.signup = async (req,res) => {
+const createUserModule = async (user_body) => {
     try {
-        const {name, email, phone_number, password } = req.body;
-        if(!name || !email || !phone_number || !password){
-            return res.status(400).json({message:"Please fill all the fields"});
-        }
+        const {name, email, phone_number, password } = user_body;
 
         const user = await prisma.author.create({
             data:{
@@ -52,6 +50,7 @@ module.exports.signup = async (req,res) => {
             created_at: user.created_at,
             updated_at: user.updated_at,
         },user.access_token_secret,{expiresIn:"15m"});
+        
         const refreshToken = await jwt.sign({
             id: user.id,
             name: user.name,
@@ -60,6 +59,27 @@ module.exports.signup = async (req,res) => {
             created_at: user.created_at,
             updated_at: user.updated_at,
         },user.refresh_token_secret,{expiresIn:"7d"});
+
+        return {
+            id: user.id,
+            accessToken,
+            refreshToken,
+        };
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+module.exports.createUserModule = createUserModule;
+module.exports.signup = async (req,res) => {
+    try {
+        const {name, email, phone_number, password } = req.body;
+        if(!name || !email || !phone_number || !password){
+            return res.status(400).json({message:"Please fill all the fields"});
+        }
+
+        const { accessToken, refreshToken } = await createUserModule(req.body);
         
         return res.status(200).json({
             accessToken,
@@ -120,9 +140,12 @@ module.exports.login = async (req,res) => {
             updated_at: user.updated_at,
         },user.refresh_token_secret,{expiresIn:"7d"});
 
+        res.cookie('access_token', accessToken, { httpOnly: true, secure: false });
+        res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: false });
+
         return res.status(200).json({
-            accessToken,
-            refreshToken,
+            // accessToken,
+            // refreshToken,
             message: "User logged in successfully",
         });
 
@@ -134,7 +157,8 @@ module.exports.login = async (req,res) => {
 
 module.exports.refresh_access_token = async (req,res) => {
     try {
-        const { email, refresh_token } = req.body;
+        const { email } = req.body;
+        const { refresh_token } = req.cookies;
         if(!email || !refresh_token){
             return res.status(400).json({message:"Please fill all the fields"});
         }
@@ -164,8 +188,11 @@ module.exports.refresh_access_token = async (req,res) => {
             updated_at: user.updated_at,
         },user.access_token_secret,{expiresIn:"15m"});
 
+
+        res.cookie('access_token', access_token, { httpOnly: true, secure: false });
+        res.cookie('refresh_token', refresh_token, { httpOnly: true, secure: false });
+
         return res.status(200).json({
-            access_token,
             message: "Access Token Refreshed successfully",
         });
 

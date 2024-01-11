@@ -91,3 +91,26 @@ COMMENT ON TRIGGER set_public_author_updated_at ON public.author IS 'trigger to 
 CREATE TRIGGER set_public_books_updated_at BEFORE UPDATE ON public.books FOR EACH ROW EXECUTE FUNCTION public.set_current_timestamp_updated_at();
 
 COMMENT ON TRIGGER set_public_books_updated_at ON public.books IS 'trigger to set value of column "updated_at" to current timestamp on row update';
+
+
+
+-- CREATE BOOKS_LIKE_ACTIVITY TABLE
+CREATE TABLE public.books_like_activity (
+    author_id text NOT NULL,
+    book_id text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+COMMENT ON TABLE public.books_like_activity IS 'Books Likes Activity';
+
+-- Add Constraint
+ALTER TABLE ONLY public.books_like_activity
+    ADD CONSTRAINT books_like_activity_pkey PRIMARY KEY (author_id, book_id);
+
+-- Add FOREIGN KEY
+
+ALTER TABLE ONLY public.books_like_activity
+    ADD CONSTRAINT books_like_activity_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.author(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.books_like_activity
+    ADD CONSTRAINT books_like_activity_book_id_fkey FOREIGN KEY (book_id) REFERENCES public.books(id) ON DELETE CASCADE;

@@ -6,10 +6,15 @@ const prisma = require("../prisma_init");
 
 module.exports.verifyAccessToken = async (req, res, next) => {
     try {
-        const token = req.headers.authorization;
+        // const token = req.headers.authorization;
+        const token = req.cookies.access_token;
+        
+        if (!token) {
+            throw new Error("Tokens not found. Please login.");
+        }
+
         // Decode JWT token
         const decodedPayload = jwt.decode(token);
-        console.log(decodedPayload)
         // Get user id from decoded payload
         const userId = decodedPayload.id;
 

@@ -13,6 +13,7 @@ app.use(cookieParser());
 app.use("/auth",require(("./routes/auth.js")));
 app.use("/test",require(("./routes/test.js")));
 app.use("/books",require(("./routes/books.js")));
+app.use("/author",require(("./routes/author.js")));
 
 
 module.exports = app;

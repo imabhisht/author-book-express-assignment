@@ -16,7 +16,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./src/dev_setup.js"
+    "dev": "nodemon ./src/dev_setup.js",
+    "db_refresh" : "npx prisma db pull &&  npx prisma generate"
   },
   "author": "",
   "license": "ISC",

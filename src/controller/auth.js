@@ -186,12 +186,20 @@ module.exports.get_user_info = async(req,res) => {
         const user = await prisma.author.findUnique({
             where:{
                 email,
+            },
+            select:{
+                id: true,
+                name: true,
+                email: true,
+                phone_number: true,
+                created_at: true,
+                updated_at: true,
             }
         });
 
 
         return res.status(200).json({
-            user,
+            ...user,
             message: "User info fetched successfully",
         });
 

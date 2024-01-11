@@ -6,7 +6,7 @@ const prisma = require("../prisma_init");
 
 module.exports.verifyAccessToken = async (req, res, next) => {
     try {
-        const token = req.headers.authorization.split(" ")[1];
+        const token = req.headers.authorization;
         // Decode JWT token
         const decodedPayload = jwt.decode(token);
         console.log(decodedPayload)
@@ -28,7 +28,7 @@ module.exports.verifyAccessToken = async (req, res, next) => {
         const verifyToken = await jwt.verify(token, user.access_token_secret);
 
         if (!verifyToken) {
-            throw new Error("Authentication failed.");
+            throw new Error("Authentication Failed");
         }
 
         // Add user to request object

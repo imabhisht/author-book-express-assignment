@@ -27,14 +27,33 @@ services:
     networks:
       - app-network
 
-  node-app:
+  node-app-1:
     image: node:20
     container_name: express-app-1
     working_dir: /usr/src/app
     volumes:
       - ./:/usr/src/app
     ports:
-      - "3000:3000"
+      - "3001:3000"  # Use a different host port for each app
+    command: sh -c "npm install && npx prisma db pull &&  npx prisma generate && npm start"
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - initdb
+
+    networks:
+      - app-network
+
+  node-app-2:
+    image: node:20
+    container_name: express-app-2
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - "3002:3000"  # Use a different host port for each app
     command: sh -c "npm install && npx prisma db pull &&  npx prisma generate && npm start"
     restart: always
     env_file:
@@ -45,6 +64,39 @@ services:
     networks:
       - app-network
 
+  node-app-3:
+    image: node:20
+    container_name: express-app-3
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - "3003:3000"  # Use a different host port for each app
+    command: sh -c "npm install && npx prisma db pull &&  npx prisma generate && npm start"
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - initdb
+    networks:
+      - app-network
+
+  load-balancer:
+    image: nginx:latest  
+    container_name: load-balancer
+    ports:
+      - "3000:80"  
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf  
+    depends_on:
+      - node-app-1
+      - node-app-2
+      - node-app-3
+      - postgres
+
+    networks:
+      - app-network
 
 
 networks:
